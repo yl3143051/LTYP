@@ -103,8 +103,11 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public void updatePassword(String userId, String password, HttpSession session) {
+        User user = userMapper.findUserByUserId(userId);
+        password = Md5HashPassword.getMd5Hash(password, user.getUsername());
         userMapper.updatePassword(userId, password);
-        session.invalidate();//修改密码完成后自动退出
+        session.removeAttribute("validate");
+        session.removeAttribute("user_login");//修改密码完成后自动退出
     }
 
     @Override
@@ -149,6 +152,7 @@ public class UserServiceImpl implements UserService{
         user.setCreateTime(new Date());
         user.setState(1);
         user.setBan(0);
+        user.setPassword(Md5HashPassword.getMd5Hash(user.getPassword(), user.getPassword()));
         userMapper.saveUser(user);
         userInfo.setUserInfoId(user.getUserId());
         userInfo.setCreateTime(new Date());
